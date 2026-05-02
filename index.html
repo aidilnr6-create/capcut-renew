@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CapCut Dashboard</title>
+<style>
+:root {
+  --bg: #0f0f13;
+  --bg2: #16161d;
+  --bg3: #1e1e2a;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0f0f5;
+  --text2: #8888a0;
+  --text3: #555568;
+  --accent: #7c6af7;
+  --accent2: #5b4fcf;
+  --accent-glow: rgba(124,106,247,0.25);
+  --green: #22c55e;
+  --green-bg: rgba(34,197,94,0.1);
+  --red: #f43f5e;
+  --red-bg: rgba(244,63,94,0.1);
+  --yellow: #f59e0b;
+  --yellow-bg: rgba(245,158,11,0.1);
+  --blue: #38bdf8;
+  --blue-bg: rgba(56,189,248,0.1);
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+
+/* LAYOUT */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.main{margin-left:220px;padding:32px;flex:1;max-width:1200px}
+
+/* SIDEBAR */
+.sidebar-logo{padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar-logo h1{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.sidebar-logo span{font-size:11px;color:var(--accent);font-weight:500;letter-spacing:0.5px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--text2);border-left:2px solid transparent;transition:all 0.15s}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(124,106,247,0.08)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-label{font-size:13px;font-weight:500}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)}
+.sidebar-bottom .version{font-size:11px;color:var(--text3)}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-0.5px}
+.page-sub{color:var(--text2);font-size:13px;margin-bottom:24px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:16px}
+
+/* METRIC GRID */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.metric.purple::before{background:linear-gradient(90deg,var(--accent),transparent)}
+.metric.green::before{background:linear-gradient(90deg,var(--green),transparent)}
+.metric.red::before{background:linear-gradient(90deg,var(--red),transparent)}
+.metric.yellow::before{background:linear-gradient(90deg,var(--yellow),transparent)}
+.metric.blue::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.metric-label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.metric-val{font-size:28px;font-weight:700;letter-spacing:-1px}
+.metric-val.purple{color:var(--accent)}
+.metric-val.green{color:var(--green)}
+.metric-val.red{color:var(--red)}
+.metric-val.yellow{color:var(--yellow)}
+.metric-val.blue{color:var(--blue)}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.2px}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-purple{background:var(--accent-glow);color:var(--accent)}
+.badge-gray{background:rgba(255,255,255,0.05);color:var(--text2)}
+
+/* TABLES */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg3)}
+th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+td{padding:11px 16px;border-top:1px solid var(--border);color:var(--text)}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.mono{font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;color:var(--text2)}
+.empty-row td{text-align:center;color:var(--text3);padding:40px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text);transition:all 0.15s}
+.btn:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red-bg)}
+.btn-success{border-color:var(--green);color:var(--green)}
+.btn-success:hover{background:var(--green-bg)}
+.btn-icon{padding:6px;border-radius:8px}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 12px;font-size:13px;color:var(--text);outline:none;width:100%;font-family:inherit;transition:border 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:120px;font-family:'JetBrains Mono',monospace;font-size:12px}
+select option{background:var(--bg3)}
+
+/* ALERT */
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:13px;margin-bottom:16px;border-left:3px solid}
+.alert-warn{background:var(--yellow-bg);border-color:var(--yellow);color:#fcd34d}
+.alert-ok{background:var(--green-bg);border-color:var(--green);color:#86efac}
+.alert-info{background:var(--blue-bg);border-color:var(--blue);color:#7dd3fc}
+.alert-danger{background:var(--red-bg);border-color:var(--red);color:#fda4af}
+
+/* ROW */
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spacer{flex:1}
+
+/* COUNTDOWN */
+.countdown{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.countdown.red{color:var(--red)}
+.countdown.yellow{color:var(--yellow)}
+.countdown.green{color:var(--green)}
+
+/* EXPORT ITEM */
+.export-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:8px}
+.export-item-info{font-size:13px;color:var(--text)}
+.export-item-sub{font-size:11px;color:var(--text3)}
+
+/* SECTION SPACING */
+.section{margin-bottom:24px}
+
+/* LOADER */
+.loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.15);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TABS (segmented) */
+.seg{display:inline-flex;background:var(--bg3);border-radius:var(--radius);padding:3px;gap:2px;margin-bottom:16px}
+.seg-btn{padding:6px 14px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:8px;transition:all 0.15s}
+.seg-btn.active{background:var(--bg2);color:var(--text);border:1px solid var(--border2)}
+
+/* PROGRESS BAR */
+.progress{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;border-radius:2px;transition:width 0.3s}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast-item{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 16px;font-size:13px;max-width:320px;animation:slideIn 0.2s ease;display:flex;gap:10px;align-items:flex-start}
+.toast-item.ok{border-left:3px solid var(--green)}
+.toast-item.err{border-left:3px solid var(--red)}
+.toast-item.info{border-left:3px solid var(--accent)}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0;padding:16px}
+  .form-grid,.form-grid-3{grid-template-columns:1fr}
+  .metric-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>CapCut Dashboard</h1>
+    <span>Renew Manager</span>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="goTo('dashboard')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="goTo('heads')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      <span class="nav-label">Akun Head</span>
+    </div>
+    <div class="nav-item" onclick="goTo('members')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span class="nav-label">Data Member</span>
+    </div>
+    <div class="nav-item" onclick="goTo('import')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      <span class="nav-label">Import Massal</span>
+    </div>
+    <div class="nav-item" onclick="goTo('export')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      <span class="nav-label">Ekspor .txt</span>
+    </div>
+    <div class="nav-item" onclick="goTo('settings')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span class="nav-label">Pengaturan</span>
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div id="api-status" class="badge badge-gray">Menghubungkan...</div>
+    <div class="version" style="margin-top:8px">v1.0.0 — WIB (UTC+7)</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="page-title">Dashboard</div>
+  <div class="page-sub" id="last-updated">Memuat data...</div>
+
+  <div class="metric-grid" id="metrics"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+    <div class="card">
+      <div class="card-title">Head Expired Terdekat</div>
+      <div id="upcoming-heads"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Jadwal Renew Member</div>
+      <div id="member-schedule"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:16px">
+      <div class="card-title" style="margin:0">Log Notifikasi Telegram</div>
+    </div>
+    <div id="notif-log"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ HEADS ═══════════════ -->
+<div id="page-heads" class="page">
+  <div class="page-title">Akun Head</div>
+  <div class="page-sub">Kelola dan cek durasi akun Capcut Head</div>
+
+  <div class="card section" id="head-add-card">
+    <div class="card-title">Tambah Akun Head</div>
+    <div class="seg">
+      <button class="seg-btn active" onclick="setHeadMode('single')">Single</button>
+      <button class="seg-btn" onclick="setHeadMode('batch')">Batch</button>
+    </div>
+    <div id="head-single">
+      <div class="form-grid">
+        <div class="form-group"><label>Email</label><input id="h-email" placeholder="email@domain.com"></div>
+        <div class="form-group"><label>Password</label><input id="h-pass" placeholder="password"></div>
+      </div>
+    </div>
+    <div id="head-batch" style="display:none">
+      <div class="form-group"><label>Paste akun (format email|password, satu baris per akun)</label>
+        <textarea id="h-batch" placeholder="email1@domain.com|pass1&#10;email2@domain.com|pass2"></textarea>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="addHeads()">Tambah</button>
+      <button class="btn" onclick="checkAllHeads()" id="btn-check-all">Cek Semua Head</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Email</th><th>Workspace</th><th>Expired (WIB)</th><th>Sisa Waktu</th><th>Status</th><th>Terakhir Dicek</th><th></th>
+      </tr></thead>
+      <tbody id="heads-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ MEMBERS ═══════════════ -->
+<div id="page-members" class="page">
+  <div class="page-title">Data Member</div>
+  <div class="page-sub">Kelola akun member yang dijual</div>
+
+  <div class="row section">
+    <input type="text" id="m-search" placeholder="Cari email..." style="max-width:200px" oninput="filterMembers()">
+    <select id="m-buyer" onchange="filterMembers()" style="max-width:160px"><option value="">Semua buyer</option></select>
+    <select id="m-status" onchange="filterMembers()" style="max-width:160px">
+      <option value="">Semua status</option>
+      <option value="pending">Belum direnew</option>
+      <option value="renewed">Sudah direnew</option>
+    </select>
+    <div class="spacer"></div>
+    <button class="btn btn-success btn-sm" onclick="markRenewed()">Tandai Direnew</button>
+    <button class="btn btn-sm" onclick="unmarkRenewed()">Reset Status</button>
+    <span id="m-count" style="font-size:12px;color:var(--text3)"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th><input type="checkbox" id="check-all" onchange="toggleCheckAll(this)"></th>
+        <th>Email</th><th>Buyer</th><th>Tgl Mulai</th><th>Renew</th><th>Renew Berikutnya</th><th>Status</th>
+      </tr></thead>
+      <tbody id="members-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ IMPORT ═══════════════ -->
+<div id="page-import" class="page">
+  <div class="page-title">Import Massal</div>
+  <div class="page-sub">Import akun member dari file atau paste teks</div>
+
+  <div class="card section">
+    <div class="card-title">Format yang Didukung</div>
+    <div class="alert alert-info">Format: <code>email|password</code> — satu baris per akun. Duplikat otomatis dilewati.</div>
+    <div class="seg">
+      <button class="seg-btn active" onclick="setImportMode('paste')">Paste Teks</button>
+      <button class="seg-btn" onclick="setImportMode('file')">Upload File</button>
+    </div>
+    <div id="import-paste">
+      <textarea id="im-text" placeholder="email1@domain.com|password1&#10;email2@domain.com|password2&#10;..." oninput="parseImport()"></textarea>
+    </div>
+    <div id="import-file" style="display:none">
+      <div style="border:1.5px dashed var(--border2);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;color:var(--text2)" onclick="document.getElementById('im-file').click()">
+        <div style="font-size:32px;margin-bottom:8px">📂</div>
+        <div>Klik untuk pilih file .txt atau .csv</div>
+        <input type="file" id="im-file" accept=".txt,.csv" style="display:none" onchange="handleImportFile(event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="card section" id="import-meta" style="display:none">
+    <div class="card-title">Informasi Batch</div>
+    <div class="form-grid-3">
+      <div class="form-group"><label>Buyer</label><input id="im-buyer" placeholder="Nama buyer"></div>
+      <div class="form-group"><label>Tanggal Mulai</label><input id="im-date" type="date"></div>
+      <div class="form-group"><label>Sudah Renew Ke-</label>
+        <select id="im-renew">
+          <option value="0">Belum (0)</option>
+          <option value="1">Renew 1</option>
+          <option value="2">Renew 2</option>
+          <option value="3">Renew 3</option>
+          <option value="4">Renew 4</option>
+        </select>
+      </div>
+    </div>
+    <div id="import-preview-summary" style="margin-top:12px;font-size:13px;color:var(--text2)"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="doImport()">Import</button>
+      <button class="btn" onclick="clearImport()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ EXPORT ═══════════════ -->
+<div id="page-export" class="page">
+  <div class="page-title">Ekspor .txt</div>
+  <div class="page-sub">Generate file email|password per jadwal renew (maks 290 per file)</div>
+
+  <div class="card section">
+    <div class="form-grid">
+      <div class="form-group"><label>Tanggal Renew</label>
+        <select id="exp-date"><option value="">-- Semua tanggal --</option></select>
+      </div>
+      <div class="form-group"><label>Buyer (opsional)</label>
+        <select id="exp-buyer"><option value="">Semua buyer</option></select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="generateExport()">Generate File</button>
+    </div>
+  </div>
+
+  <div id="export-result"></div>
+</div>
+
+<!-- ═══════════════ SETTINGS ═══════════════ -->
+<div id="page-settings" class="page">
+  <div class="page-title">Pengaturan</div>
+  <div class="page-sub">Konfigurasi sistem dan Telegram</div>
+
+  <div class="card section">
+    <div class="card-title">Telegram Bot</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Bot Token</label><input id="s-token" placeholder="123456:ABC-DEF..."></div>
+      <div class="form-group"><label>Chat ID</label><input id="s-chatid" placeholder="-100xxxxxxxxx"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="saveSettings()">Simpan</button>
+      <button class="btn" onclick="testTelegram()">Test Kirim</button>
+      <span id="tg-status" style="font-size:12px;color:var(--text2)"></span>
+    </div>
+  </div>
+
+  <div class="card section">
+    <div class="card-title">Konfigurasi Bisnis</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Harga 1 Capcut Head (Rp)</label><input id="s-price" type="number" placeholder="contoh: 5000"></div>
+      <div class="form-group"><label>Kapasitas per Head (member)</label><input id="s-cap" type="number" value="29"></div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:12px" onclick="saveSettings()">Simpan</button>
+  </div>
+
+  <div class="card section">
+    <div class="card-title">Simulasi Biaya (7 Jadwal ke Depan)</div>
+    <div id="cost-sim"></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:3001'
+  : 'https://api.DOMAIN-KAMU.com'; // ← Ganti dengan domain API kamu
+
+// ── STATE ──────────────────────────────────────────────────
+let stats = {};
+let members = [];
+let heads = [];
+let settings = {};
+let importParsed = [];
+let importMode = 'paste';
+let headMode = 'single';
+
+// ── NAVIGATION ────────────────────────────────────────────
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (page === 'dashboard') loadDashboard();
+  if (page === 'heads') loadHeads();
+  if (page === 'members') loadMembers();
+  if (page === 'export') loadExport();
+  if (page === 'settings') loadSettings();
+}
+
+// ── API HELPER ────────────────────────────────────────────
+async function api(path, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API + path, opts);
+  return res.json();
+}
+
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = 'toast-item ' + type;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── FORMAT ────────────────────────────────────────────────
+function fmtWIB(ts) {
+  if (!ts) return '-';
+  return new Intl.DateTimeFormat('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  }).format(new Date(ts * 1000));
+}
+
+function fmtCountdown(ts) {
+  if (!ts) return '-';
+  const diff = ts - Math.floor(Date.now() / 1000);
+  if (diff <= 0) return '<span class="countdown red">EXPIRED</span>';
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const cls = diff < 86400 ? 'red' : diff < 259200 ? 'yellow' : 'green';
+  if (h < 24) return `<span class="countdown ${cls}">${h}j ${m}m</span>`;
+  const d = Math.floor(h / 24);
+  return `<span class="countdown ${cls}">${d} hari ${h % 24}j</span>`;
+}
+
+function fmtRp(n) { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); }
+
+// ── DASHBOARD ─────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    stats = await api('/api/stats');
+    settings = await api('/api/settings');
+    renderMetrics();
+    renderUpcomingHeads();
+    renderMemberSchedule();
+    renderNotifLog();
+    document.getElementById('last-updated').textContent = 'Terakhir diperbarui: ' + new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }) + ' WIB';
+    document.getElementById('api-status').className = 'badge badge-green';
+    document.getElementById('api-status').textContent = 'Backend OK';
+  } catch(e) {
+    document.getElementById('api-status').className = 'badge badge-red';
+    document.getElementById('api-status').textContent = 'Backend Error';
+    toast('Gagal terhubung ke backend: ' + e.message, 'err');
+  }
+}
+
+function renderMetrics() {
+  const cap = parseInt(settings.kapasitas) || 29;
+  const price = parseInt(settings.tg_price) || 0;
+  const urgentHeads = stats.urgentHeads || 0;
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric purple">
+      <div class="metric-label">Total Member</div>
+      <div class="metric-val purple">${stats.totalMembers || 0}</div>
+      <div class="metric-sub">${stats.renewedMembers || 0} sudah direnew</div>
+    </div>
+    <div class="metric green">
+      <div class="metric-label">Belum Direnew</div>
+      <div class="metric-val green">${stats.pendingMembers || 0}</div>
+      <div class="metric-sub">Perlu diperbarui</div>
+    </div>
+    <div class="metric blue">
+      <div class="metric-label">Total Head</div>
+      <div class="metric-val blue">${stats.totalHeads || 0}</div>
+      <div class="metric-sub">${stats.activeHeads || 0} aktif</div>
+    </div>
+    <div class="metric ${urgentHeads > 0 ? 'red' : 'yellow'}">
+      <div class="metric-label">Head Expired &lt;24 Jam</div>
+      <div class="metric-val ${urgentHeads > 0 ? 'red' : 'yellow'}">${urgentHeads}</div>
+      <div class="metric-sub">${urgentHeads > 0 ? 'Segera PO head baru!' : 'Aman'}</div>
+    </div>
+  `;
+}
+
+function renderUpcomingHeads() {
+  const el = document.getElementById('upcoming-heads');
+  const list = stats.upcomingHeads || [];
+  if (!list.length) { el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">Belum ada data head</div>'; return; }
+  el.innerHTML = list.slice(0, 6).map(h => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div class="mono">${h.email.split('@')[0]}@...</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${fmtWIB(h.expired_at)}</div>
+      </div>
+      <div>${fmtCountdown(h.expired_at)}</div>
+    </div>
+  `).join('');
+}
+
+function renderMemberSchedule() {
+  const el = document.getElementById('member-schedule');
+  const list = stats.schedule || [];
+  if (!list.length) { el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">Belum ada jadwal</div>'; return; }
+
+  const grouped = {};
+  list.forEach(s => {
+    if (!grouped[s.renew_date]) grouped[s.renew_date] = { total: 0, buyers: [] };
+    grouped[s.renew_date].total += s.member_count;
+    grouped[s.renew_date].buyers.push(s.buyer + ' (' + s.member_count + ')');
+  });
+
+  el.innerHTML = Object.entries(grouped).slice(0, 6).map(([date, data]) => `
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:600;font-size:13px">${date}</div>
+        <div class="badge badge-purple">${data.total} akun</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px">${data.buyers.join(', ')}</div>
+    </div>
+  `).join('');
+}
+
+function renderNotifLog() {
+  const el = document.getElementById('notif-log');
+  const list = stats.notifLog || [];
+  if (!list.length) { el.innerHTML = '<div style="color:var(--text3);font-size:13px">Belum ada notifikasi terkirim</div>'; return; }
+  el.innerHTML = list.map(n => `
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--text3)">${fmtWIB(n.sent_at)}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px;white-space:pre-wrap">${n.message.substring(0, 120)}...</div>
+    </div>
+  `).join('');
+}
+
+// ── HEADS ──────────────────────────────────────────────────
+async function loadHeads() {
+  heads = await api('/api/heads');
+  renderHeadsTable();
+}
+
+function renderHeadsTable() {
+  const tbody = document.getElementById('heads-table');
+  if (!heads.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Belum ada akun head</td></tr>'; return; }
+  tbody.innerHTML = heads.map(h => `
+    <tr>
+      <td class="mono">${h.email}</td>
+      <td>${h.workspace_name || '-'}</td>
+      <td style="font-size:12px">${fmtWIB(h.expired_at)}</td>
+      <td>${fmtCountdown(h.expired_at)}</td>
+      <td>${statusBadge(h.status)}</td>
+      <td style="font-size:11px;color:var(--text3)">${h.last_checked ? fmtWIB(h.last_checked) : '-'}</td>
+      <td class="row" style="gap:4px">
+        <button class="btn btn-sm" onclick="checkHead(${h.id})">Cek</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteHead(${h.id})">Hapus</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function statusBadge(s) {
+  if (s === 'active') return '<span class="badge badge-green">Aktif</span>';
+  if (s === 'error') return '<span class="badge badge-red">Error</span>';
+  if (s === 'notified') return '<span class="badge badge-yellow">Notified</span>';
+  return '<span class="badge badge-gray">Unchecked</span>';
+}
+
+function setHeadMode(mode) {
+  headMode = mode;
+  document.getElementById('head-single').style.display = mode === 'single' ? '' : 'none';
+  document.getElementById('head-batch').style.display = mode === 'batch' ? '' : 'none';
+  document.querySelectorAll('#head-add-card .seg-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && mode === 'single') || (i === 1 && mode === 'batch'));
+  });
+}
+
+async function addHeads() {
+  let accounts = [];
+  if (headMode === 'single') {
+    const email = document.getElementById('h-email').value.trim();
+    const password = document.getElementById('h-pass').value.trim();
+    if (!email) { toast('Email wajib diisi', 'err'); return; }
+    accounts = [{ email, password }];
+  } else {
+    const lines = document.getElementById('h-batch').value.split('\n').filter(l => l.trim());
+    accounts = lines.map(l => {
+      const [email, password] = l.split('|');
+      return { email: email?.trim(), password: password?.trim() || '' };
+    }).filter(a => a.email);
+  }
+  if (!accounts.length) { toast('Tidak ada akun valid', 'err'); return; }
+  const r = await api('/api/heads/add', 'POST', { accounts });
+  toast(`${r.added} akun head ditambahkan`, 'ok');
+  loadHeads();
+}
+
+async function checkHead(id) {
+  toast('Mengecek akun head...', 'info');
+  try {
+    const r = await api(`/api/heads/${id}/check`, 'POST');
+    toast(`Berhasil! Expired: ${r.result.expiredWIB} (${r.result.daysRemaining} hari)`, 'ok');
+    loadHeads();
+  } catch(e) {
+    toast('Gagal cek: ' + e.message, 'err');
+  }
+}
+
+async function checkAllHeads() {
+  const btn = document.getElementById('btn-check-all');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Mengecek...';
+  toast('Mengecek semua head... Mohon tunggu', 'info');
+  const r = await api('/api/heads/check-all', 'POST');
+  const ok = r.results.filter(x => x.ok).length;
+  const fail = r.results.filter(x => !x.ok).length;
+  toast(`Selesai! ${ok} berhasil, ${fail} gagal`, ok > 0 ? 'ok' : 'err');
+  btn.disabled = false;
+  btn.textContent = 'Cek Semua Head';
+  loadHeads();
+}
+
+async function deleteHead(id) {
+  if (!confirm('Hapus akun head ini?')) return;
+  await api(`/api/heads/${id}`, 'DELETE');
+  toast('Head dihapus', 'ok');
+  loadHeads();
+}
+
+// ── MEMBERS ────────────────────────────────────────────────
+async function loadMembers() {
+  members = await api('/api/members');
+  // Populate buyer dropdown
+  const buyers = [...new Set(members.map(m => m.buyer).filter(Boolean))].sort();
+  const sel = document.getElementById('m-buyer');
+  sel.innerHTML = '<option value="">Semua buyer</option>' + buyers.map(b => `<option value="${b}">${b}</option>`).join('');
+  filterMembers();
+}
+
+function filterMembers() {
+  const q = document.getElementById('m-search').value.toLowerCase();
+  const buyer = document.getElementById('m-buyer').value;
+  const status = document.getElementById('m-status').value;
+  let filtered = members.filter(m => {
+    const matchQ = m.email.toLowerCase().includes(q) || (m.buyer || '').toLowerCase().includes(q);
+    const matchB = !buyer || m.buyer === buyer;
+    const matchS = !status || (status === 'renewed' && m.marked_renewed) || (status === 'pending' && !m.marked_renewed);
+    return matchQ && matchB && matchS;
+  });
+  document.getElementById('m-count').textContent = filtered.length + ' ditampilkan';
+  const tbody = document.getElementById('members-table');
+  if (!filtered.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Tidak ada data</td></tr>'; return; }
+  tbody.innerHTML = filtered.map(m => `
+    <tr>
+      <td><input type="checkbox" class="m-check" value="${m.id}"></td>
+      <td class="mono">${m.email}</td>
+      <td>${m.buyer || '-'}</td>
+      <td style="font-size:12px">${m.tanggal_mulai || '-'}</td>
+      <td>${m.renew_count}/4</td>
+      <td style="font-size:12px;color:${m.marked_renewed ? 'var(--text3)' : 'var(--yellow)'}">${m.renew_date || '-'}</td>
+      <td>${m.marked_renewed
+        ? '<span class="badge badge-green">Sudah</span>'
+        : '<span class="badge badge-yellow">Pending</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+function toggleCheckAll(cb) {
+  document.querySelectorAll('.m-check').forEach(c => c.checked = cb.checked);
+}
+
+function getCheckedIds() {
+  return [...document.querySelectorAll('.m-check:checked')].map(c => parseInt(c.value));
+}
+
+async function markRenewed() {
+  const ids = getCheckedIds();
+  if (!ids.length) { toast('Pilih akun terlebih dahulu', 'err'); return; }
+  await api('/api/members/mark-renewed', 'POST', { ids });
+  toast(ids.length + ' akun ditandai sudah direnew', 'ok');
+  loadMembers();
+}
+
+async function unmarkRenewed() {
+  const ids = getCheckedIds();
+  if (!ids.length) { toast('Pilih akun terlebih dahulu', 'err'); return; }
+  await api('/api/members/unmark-renewed', 'POST', { ids });
+  toast('Status direset', 'ok');
+  loadMembers();
+}
+
+// ── IMPORT ─────────────────────────────────────────────────
+function setImportMode(mode) {
+  importMode = mode;
+  document.getElementById('import-paste').style.display = mode === 'paste' ? '' : 'none';
+  document.getElementById('import-file').style.display = mode === 'file' ? '' : 'none';
+  document.querySelectorAll('#page-import .seg-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && mode === 'paste') || (i === 1 && mode === 'file'));
+  });
+}
+
+function parseLines(text) {
+  return text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l && l.includes('@'))
+    .map(l => {
+      let email = '', pass = '';
+      if (l.includes('|')) [email, pass] = l.split('|');
+      else if (l.includes(',')) [email, pass] = l.split(',');
+      else { const p = l.split(/\s+/); email = p[0]; pass = p[1] || ''; }
+      return { email: email.trim(), password: pass.trim() };
+    }).filter(a => a.email.includes('@'));
+}
+
+function parseImport() {
+  importParsed = parseLines(document.getElementById('im-text').value);
+  showImportMeta();
+}
+
+function handleImportFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { importParsed = parseLines(ev.target.result); showImportMeta(); };
+  reader.readAsText(file);
+}
+
+function showImportMeta() {
+  const meta = document.getElementById('import-meta');
+  if (!importParsed.length) { meta.style.display = 'none'; return; }
+  meta.style.display = '';
+  if (!document.getElementById('im-date').value) {
+    document.getElementById('im-date').value = new Date().toISOString().split('T')[0];
+  }
+  document.getElementById('import-preview-summary').innerHTML =
+    `<span class="badge badge-purple">${importParsed.length} akun siap diimport</span>`;
+}
+
+async function doImport() {
+  const buyer = document.getElementById('im-buyer').value.trim();
+  const tanggal_mulai = document.getElementById('im-date').value;
+  const renew_count = parseInt(document.getElementById('im-renew').value);
+  if (!tanggal_mulai) { toast('Tanggal mulai wajib diisi', 'err'); return; }
+  const r = await api('/api/members/import', 'POST', { accounts: importParsed, buyer, tanggal_mulai, renew_count });
+  toast(`${r.added} akun berhasil diimport!`, 'ok');
+  clearImport();
+}
+
+function clearImport() {
+  importParsed = [];
+  document.getElementById('im-text').value = '';
+  document.getElementById('import-meta').style.display = 'none';
+}
+
+// ── EXPORT ─────────────────────────────────────────────────
+async function loadExport() {
+  const m = await api('/api/members');
+  const dates = [...new Set(m.filter(x => !x.marked_renewed && x.renew_date).map(x => x.renew_date))].sort();
+  const buyers = [...new Set(m.map(x => x.buyer).filter(Boolean))].sort();
+  const dSel = document.getElementById('exp-date');
+  const bSel = document.getElementById('exp-buyer');
+  dSel.innerHTML = '<option value="">-- Semua tanggal --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+  bSel.innerHTML = '<option value="">Semua buyer</option>' + buyers.map(b => `<option value="${b}">${b}</option>`).join('');
+}
+
+async function generateExport() {
+  const date = document.getElementById('exp-date').value;
+  const buyer = document.getElementById('exp-buyer').value;
+  const params = new URLSearchParams();
+  if (date) params.set('renew_date', date);
+  if (buyer) params.set('buyer', buyer);
+  const data = await api('/api/export?' + params.toString());
+  const MAX = 290;
+  const chunks = [];
+  for (let i = 0; i < data.members.length; i += MAX) chunks.push(data.members.slice(i, i + MAX));
+  if (!chunks.length) { document.getElementById('export-result').innerHTML = '<div class="alert alert-info">Tidak ada akun yang perlu direnew</div>'; return; }
+  let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:12px">Total ${data.total} akun → ${chunks.length} file</div>`;
+  chunks.forEach((chunk, idx) => {
+    const content = chunk.map(m => `${m.email}|${m.password}`).join('\n');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const fname = `renew${date ? '_' + date.replace(/\//g, '-') : ''}${buyer ? '_' + buyer : ''}_part${idx + 1}.txt`;
+    html += `<div class="export-item">
+      <div><div class="export-item-info">${fname}</div>
+      <div class="export-item-sub">${chunk.length} akun</div></div>
+      <a href="${url}" download="${fname}" class="btn btn-primary btn-sm">Unduh</a>
+    </div>`;
+  });
+  document.getElementById('export-result').innerHTML = html;
+}
+
+// ── SETTINGS ───────────────────────────────────────────────
+async function loadSettings() {
+  settings = await api('/api/settings');
+  document.getElementById('s-token').value = settings.tg_token || '';
+  document.getElementById('s-chatid').value = settings.tg_chatid || '';
+  document.getElementById('s-price').value = settings.tg_price || '';
+  document.getElementById('s-cap').value = settings.kapasitas || 29;
+  renderCostSim();
+}
+
+async function saveSettings() {
+  await api('/api/settings', 'POST', {
+    tg_token: document.getElementById('s-token').value.trim(),
+    tg_chatid: document.getElementById('s-chatid').value.trim(),
+    tg_price: document.getElementById('s-price').value,
+    kapasitas: document.getElementById('s-cap').value
+  });
+  toast('Pengaturan disimpan', 'ok');
+  renderCostSim();
+}
+
+async function testTelegram() {
+  const el = document.getElementById('tg-status');
+  el.textContent = 'Mengirim...';
+  const r = await api('/api/telegram/test', 'POST');
+  el.textContent = r.ok ? '✓ Berhasil!' : '✗ Gagal: ' + (r.description || r.reason);
+}
+
+async function renderCostSim() {
+  const price = parseInt(document.getElementById('s-price').value) || 0;
+  const cap = parseInt(document.getElementById('s-cap').value) || 29;
+  if (!stats.schedule) { stats = await api('/api/stats'); }
+  const grouped = {};
+  (stats.schedule || []).forEach(s => {
+    if (!grouped[s.renew_date]) grouped[s.renew_date] = 0;
+    grouped[s.renew_date] += s.member_count;
+  });
+  const keys = Object.keys(grouped).sort().slice(0, 7);
+  if (!keys.length) { document.getElementById('cost-sim').innerHTML = '<div style="color:var(--text3)">Belum ada data</div>'; return; }
+  let total = 0;
+  let html = '<table style="width:100%"><thead><tr><th>Tanggal</th><th>Akun</th><th>Head</th><th>Est. Biaya</th></tr></thead><tbody>';
+  keys.forEach(k => {
+    const n = grouped[k];
+    const h = Math.ceil(n / cap);
+    const b = h * price;
+    total += b;
+    html += `<tr><td>${k}</td><td>${n}</td><td>${h}</td><td>${price ? fmtRp(b) : '-'}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  if (price) html += `<div style="margin-top:12px;font-weight:600;font-size:13px">Total estimasi: ${fmtRp(total)}</div>`;
+  document.getElementById('cost-sim').innerHTML = html;
+}
+
+// ── INIT ───────────────────────────────────────────────────
+loadDashboard();
+setInterval(loadDashboard, 60000); // Refresh dashboard tiap 1 menit
+</script>
+</body>
+</html>
